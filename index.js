@@ -7,9 +7,22 @@ const { commitRepo } = require("./controllers/commit.js");
 const { pullRepo } = require("./controllers/pull.js");
 const { pushRepo } = require("./controllers/push.js");
 const { revertRepo } = require("./controllers/revert.js");
+const { loginCLI } = require("./controllers/login.js");
 
 yargs(hideBin(process.argv))
-    .command("init", "Initialised a new repository", {}, initRepo)
+    .command("start", "start a new server", {}, startServer)
+    .command("init [repoName]",
+        "Initialised a new repository",
+        (yargs) => {
+            yargs.positional("repoName", {
+                describe: "Optional name for the repo",
+                type: "string",
+            });
+        },
+        (argv) => {
+            initRepo(argv.repoName);
+        }
+    )
     .command("add <file>",
         "Add a file to the repository",
         (yargs) => {
@@ -34,13 +47,31 @@ yargs(hideBin(process.argv))
         })
     .command("pull", "pull commits from S3", {}, pullRepo)
     .command("push", "push commits from S3", {}, pushRepo)
-    .command("revert<commitID>",
+    .command("revert <commitID>",
         "Revert to a specific commit",
         (yargs) => {
             yargs.positional("commitID", {
                 describe: " commit ID to revert to",
                 type: "string",
             });
-        }, revertRepo)
+        },
+        (argv) => {
+            revertRepo(argv.commitID);
+        })
+    .command("login <email> <password>",
+        "Login to your account",
+        (yargs) => {
+            yargs
+                .positional("email", { type: "string" })
+                .positional("password", { type: "string" });
+        },
+        (argv) => {
+            loginCLI(argv.email, argv.password);
+        }
+    )
     .demandCommand(1, " you need at least one command")
     .help().argv;
+
+function startServer() {
+    require("./server.js");
+}
