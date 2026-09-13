@@ -5,3 +5,6 @@ package-lock.json
 hello.txt
 firebase-key.json
 remote-storage/
+.env
+test-repo/
+test-repo-2/
