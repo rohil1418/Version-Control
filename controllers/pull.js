@@ -1,33 +1,58 @@
 const fs = require("fs").promises;
 const path = require("path");
+const axios = require("axios");
 
-const REMOTE_PATH = path.resolve(process.cwd(), "remote-storage");
+const API_BASE_URL = "http://localhost:5000/api";
 
 async function pullRepo() {
     const repoPath = path.resolve(process.cwd(), ".apnaGit");
     const commitsPath = path.join(repoPath, "commits");
 
     try {
-        const remoteCommitsPath = path.join(REMOTE_PATH, "commits");
-        const commitDirs = await fs.readdir(remoteCommitsPath);
+        const configData = JSON.parse(
+            await fs.readFile(path.join(repoPath, "config.json"), "utf-8")
+        );
+        const authData = JSON.parse(
+            await fs.readFile(path.join(repoPath, "auth.json"), "utf-8")
+        );
 
-        for (const commitDir of commitDirs) {
-            const remoteCommitPath = path.join(remoteCommitsPath, commitDir);
-            const files = await fs.readdir(remoteCommitPath);
-
-            const localCommitPath = path.join(commitsPath, commitDir);
-            await fs.mkdir(localCommitPath, { recursive: true });
-
-            for (const file of files) {
-                const sourceFile = path.join(remoteCommitPath, file);
-                const destFile = path.join(localCommitPath, file);
-                await fs.copyFile(sourceFile, destFile);
-            }
+        if (!configData.repoId) {
+            console.log("This repo is not linked to a backend repo. Cannot pull.");
+            return;
         }
 
-        console.log("All commits pulled from remote storage");
+        const response = await axios.get(
+            `${API_BASE_URL}/repos/${configData.repoId}/commits`,
+            { headers: { Authorization: `Bearer ${authData.token}` } }
+        );
+
+        const remoteCommits = response.data.commits;
+
+        for (const commit of remoteCommits) {
+            const localCommitDir = path.join(commitsPath, commit.commitID);
+
+            try {
+                await fs.access(localCommitDir);
+                continue; 
+            } catch {
+                
+            }
+
+            await fs.mkdir(localCommitDir, { recursive: true });
+            await fs.writeFile(
+                path.join(localCommitDir, "commit.json"),
+                JSON.stringify({ message: commit.message, date: commit.date })
+            );
+            console.log(`Pulled commit metadata: ${commit.commitID}`);
+        }
+
+        console.log("Pull complete. (Note: file contents require push/pull via remote-storage for now.)");
     } catch (err) {
-        console.error("Error pulling from remote: ", err);
+        if (err.response) {
+            console.error("Pull failed:", err.response.data.message);
+        } else {
+            console.error("Pull error:", err.message);
+        }
     }
 }
 
