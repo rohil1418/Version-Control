@@ -4,7 +4,7 @@ const User = require("../models/userModel.js");
 async function createRepo(req, res) {
     try {
         const { name, description, visibility } = req.body;
-        const userId = req.user.id; // authMiddleware se aayega
+        const userId = req.user.id; 
 
         if (!name) {
             return res.status(400).json({ message: "Repo name is required" });
@@ -25,7 +25,6 @@ async function createRepo(req, res) {
 
         await newRepo.save();
 
-        // user ke repositories array mein bhi reference daal do
         await User.findByIdAndUpdate(userId, {
             $push: { repositories: newRepo._id },
         });
@@ -42,8 +41,6 @@ async function getMyRepos(req, res) {
         const userId = req.user.id;
 
         const repos = await Repo.find({ owner: userId }).select("-commits");
-        // commits exclude kiya list view mein, kyunki wo bade ho sakte hain
-
         res.status(200).json({ repos });
     } catch (err) {
         console.error("Get repos error:", err);
