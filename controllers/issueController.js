@@ -25,7 +25,6 @@ async function createIssue(req, res) {
 
         await newIssue.save();
 
-        // repo ke issues array mein reference daal do
         repo.issues.push(newIssue._id);
         await repo.save();
 
