@@ -12,7 +12,7 @@ const commitSchema = new mongoose.Schema(
         },
         files: [
             {
-                type: String, // filenames included in this commit
+                type: String, 
             },
         ],
         date: {
@@ -20,7 +20,7 @@ const commitSchema = new mongoose.Schema(
             default: Date.now,
         },
     },
-    { _id: false } // commitID hi humara identifier hai, alag se _id ki zaroorat nahi
+    { _id: false } 
 );
 
 const repoSchema = new mongoose.Schema(
