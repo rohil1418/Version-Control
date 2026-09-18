@@ -4,12 +4,14 @@ const mongoose = require("mongoose");
 
 const authRoutes = require("./routes/authRoutes.js");
 const repoRoutes = require("./routes/repoRoutes.js");
+const issueRoutes = require("./routes/issueRoutes.js");
 
 const app = express();
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/repos", repoRoutes);
+app.use("/api", issueRoutes);
 
 const PORT = process.env.PORT || 5000;
 
