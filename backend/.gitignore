@@ -1,0 +1,10 @@
+node_modules/
+package.json
+package-lock.json
+.apnaGit/
+hello.txt
+firebase-key.json
+remote-storage/
+.env
+test-repo/
+test-repo-2/
